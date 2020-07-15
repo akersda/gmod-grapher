@@ -78,7 +78,7 @@ function PANEL:Think()
 			self.gdata[k].cir1, self.gdata[k].cir2 = draw.CalcVertsPartCir( w, h, self.radius1, self.radius2, pos, pos + sw )
 			pos = pos + sw
 		end
-		self.proc = self.proc + 1
+		self.proc = self.proc + 2
 	end
 	
 end
