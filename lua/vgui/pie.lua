@@ -30,15 +30,11 @@ end
 
 function PANEL:AddData( data, name, colour )
 	
-	if type(data) != "number" then 
-		print( "error: unexpected data entry in pie graph element" )
-	else
-		if name == nil or type(name) != "string" then name = "unknown" end
-		if colour == nil or !IsColor(colour) then colour = HSVToColor( #self.gdata*30, 1, 1 ) end
-		
-		table.insert( self.gdata, {data = data, name = name, col = colour} )
-		self.numsum = self.numsum + data
-	end
+	if name == nil or !isstring(name) then name = "unknown" end
+	if colour == nil or !IsColor(colour) then colour = HSVToColor( #self.gdata*30, 1, 1 ) end
+	
+	table.insert( self.gdata, {data = tonumber(data), name = name, col = colour} )
+	self.numsum = self.numsum + tonumber(data)
 	
 end
 
@@ -58,33 +54,21 @@ end
 
 function PANEL:SetSpeed( num )
 	
-	if type(num) != "number" then 
-		print( "error: unexpected radius entry in pie graph element" )
-	else
-		self.speed = num
-	end
+	self.speed = tonumber(num)
 	
 end
 
 function PANEL:SetRadius( num )
 	
-	if type(num) != "number" then 
-		print( "error: unexpected radius entry in pie graph element" )
-	else
-		local thick = self.radius2 - self.radius1
-		self.radius1 = num
-		self.radius2 = num + thick
-	end
+	local thick = self.radius2 - self.radius1
+	self.radius1 = tonumber(num)
+	self.radius2 = tonumber(num) + thick
 	
 end
 
 function PANEL:SetThick( num )
 	
-	if type(num) != "number" then 
-		print( "error: unexpected radius entry in pie graph element" )
-	else
-		self.radius2 = self.radius1 + num
-	end
+	self.radius2 = self.radius1 + tonumber(num)
 	
 end
 
@@ -108,3 +92,4 @@ function PANEL:Think()
 end
 
 vgui.Register( "GPie", PANEL, "EditablePanel" )
+print("GPie vgui element by Cptn.Sheep. https://github.com/akersda" )

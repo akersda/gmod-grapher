@@ -1,32 +1,117 @@
 function draw.CalcVertsPartCir( a, b, inrad, outrad, stdeg, endeg )
 	
-	-- dont bother if too small
-	if (endeg - stdeg) < 1 then return {} end
-	
 	-- setup circle 1 and 2
 	local cir1 = {}
 	local cir2 = {}
 	
-	-- calculate number of points
-	local numverts = 2 + math.floor( (endeg - stdeg) / 6 )
+	-- get segment size (degrees)
+	local segsize = (endeg - stdeg)
 	
-	-- convert to radians
-	stdeg = math.rad(stdeg)
-	endeg = math.rad(endeg)
+	-- select case
+	if segsize <= 0 then -- no circle (doesnt support negative rotation)
 	
-	local porot = stdeg -- point rotation (radians)
-	local diffrot = (endeg - stdeg) / (numverts - 1) -- difference in rotation of points (radians)
-	
-	-- calc x,y points
-	for i = 1,numverts do
-	
-		local cosdeg = math.cos(porot) -- triangular width
-		local sindeg = math.sin(porot) -- triangular height
+		-- return empty cirlces
 		
-		table.insert( cir1, { x = outrad * cosdeg + a , y = outrad * sindeg + b } ) -- outer circle
-		table.insert( cir2, { x = inrad * cosdeg + a , y = inrad * sindeg + b } ) -- inner circle
+	elseif segsize >= 360 then -- make a full circle 
+	
+		local rotpoi = { -- pre calculated sin and cos
+		[1] = {c=1.0,s=0.0},
+		[2] = {c=0.99469987561459,s=0.10282099713736},
+		[3] = {c=0.97885568509536,s=0.2045520661262},
+		[4] = {c=0.95263538080338,s=0.30411483232752},
+		[5] = {c=0.916316904487,s=0.40045390565127},
+		[6] = {c=0.87028524103016,s=0.49254806795386},
+		[7] = {c=0.81502833751681,s=0.57942109820456},
+		[8] = {c=0.75113193087052,s=0.66015212067123},
+		[9] = {c=0.67927333889729,s=0.7338853664322},
+		[10] = {c=0.60021428054837,s=0.79983924473972},
+		[11] = {c=0.51479280150983,s=0.85731462807633},
+		[12] = {c=0.42391439070986,s=0.90570226308047},
+		[13] = {c=0.32854238191083,s=0.94448922878366},
+		[14] = {c=0.2296877421318,s=0.97326437370038},
+		[15] = {c=0.12839835514655,s=0.9917226741361},
+		[16] = {c=0.025747913654989,s=0.99966846751431},
+		[17] = {c=-0.077175462126646,s=0.99701752644853},
+		[18] = {c=-0.17928075881074,s=0.98379795157352},
+		[19] = {c=-0.27948563485161,s=0.9601498736716},
+		[20] = {c=-0.37672789363518,s=0.9263239682515},
+		[21] = {c=-0.46997674302732,s=0.88267879832555},
+		[22] = {c=-0.55824372202686,s=0.82967701355262},
+		[23] = {c=-0.64059317869818,s=0.7678804460366},
+		[24] = {c=-0.71615218831439,s=0.69794415476634},
+		[25] = {c=-0.78411980657671,s=0.62060948182742},
+		[26] = {c=-0.84377555982319,s=0.5366961939916},
+		[27] = {c=-0.8944870822288,s=0.44709379298511},
+		[28] = {c=-0.93571681904049,s=0.35275208654909},
+		[29] = {c=-0.96702772479132,s=0.25467112024123},
+		[30] = {c=-0.98808789609108,s=0.15389057670406},
+		[31] = {c=-0.99867408988483,s=0.051478754770345},
+		[32] = {c=-0.99867408988483,s=-0.051478754770348},
+		[33] = {c=-0.98808789609108,s=-0.15389057670406},
+		[34] = {c=-0.96702772479132,s=-0.25467112024123},
+		[35] = {c=-0.93571681904049,s=-0.3527520865491},
+		[36] = {c=-0.89448708222879,s=-0.44709379298512},
+		[37] = {c=-0.84377555982318,s=-0.5366961939916},
+		[38] = {c=-0.78411980657671,s=-0.62060948182742},
+		[39] = {c=-0.71615218831439,s=-0.69794415476635},
+		[40] = {c=-0.64059317869817,s=-0.7678804460366},
+		[41] = {c=-0.55824372202686,s=-0.82967701355262},
+		[42] = {c=-0.46997674302732,s=-0.88267879832555},
+		[43] = {c=-0.37672789363518,s=-0.9263239682515},
+		[44] = {c=-0.27948563485161,s=-0.9601498736716},
+		[45] = {c=-0.17928075881073,s=-0.98379795157352},
+		[46] = {c=-0.077175462126643,s=-0.99701752644853},
+		[47] = {c=0.025747913654992,s=-0.99966846751431},
+		[48] = {c=0.12839835514655,s=-0.9917226741361},
+		[49] = {c=0.2296877421318,s=-0.97326437370038},
+		[50] = {c=0.32854238191084,s=-0.94448922878366},
+		[51] = {c=0.42391439070986,s=-0.90570226308047},
+		[52] = {c=0.51479280150983,s=-0.85731462807633},
+		[53] = {c=0.60021428054837,s=-0.79983924473972},
+		[54] = {c=0.6792733388973,s=-0.7338853664322},
+		[55] = {c=0.75113193087052,s=-0.66015212067123},
+		[56] = {c=0.81502833751681,s=-0.57942109820456},
+		[57] = {c=0.87028524103016,s=-0.49254806795386},
+		[58] = {c=0.91631690448701,s=-0.40045390565126},
+		[59] = {c=0.95263538080338,s=-0.30411483232751},
+		[60] = {c=0.97885568509536,s=-0.2045520661262},
+		[61] = {c=0.99469987561459,s=-0.10282099713735},
+		[62] = {c=1.0,s=0.0}
+		}
 		
-		porot = porot + diffrot -- reposition rotation
+		-- calc x,y points
+		for i = 1,62 do
+			
+			table.insert( cir1, { x = outrad * rotpoi[i].c + a , y = outrad * rotpoi[i].s + b } ) -- outer circle
+			table.insert( cir2, { x = inrad * rotpoi[i].c + a , y = inrad * rotpoi[i].s + b } ) -- inner circle
+			
+		end
+		
+	else -- make a segment
+	
+		-- calculate number of points
+		local numverts = 2 + math.floor( segsize / 6 )
+		
+		-- convert to radians
+		stdeg = math.rad(stdeg)
+		endeg = math.rad(endeg)
+		segsize = math.rad(segsize)
+		
+		local porot = stdeg -- point rotation (radians)
+		local diffrot = segsize / (numverts - 1) -- difference in rotation of points (radians)
+		
+		-- calc x,y points
+		for i = 1,numverts do
+		
+			local cosdeg = math.cos(porot) -- triangular width
+			local sindeg = math.sin(porot) -- triangular height
+			
+			table.insert( cir1, { x = outrad * cosdeg + a , y = outrad * sindeg + b } ) -- outer circle
+			table.insert( cir2, { x = inrad * cosdeg + a , y = inrad * sindeg + b } ) -- inner circle
+			
+			porot = porot + diffrot -- reposition rotation
+			
+		end
 		
 	end
 	
