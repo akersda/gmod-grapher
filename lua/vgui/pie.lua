@@ -5,7 +5,7 @@ function PANEL:Init()
 	self.gdata = {}
 	self.showname = false
 	self.numsum = 0
-	self.proc = 360
+	self.proc = 361
 	self.radius1 = 100
 	self.radius2 = 200
 	
