@@ -122,11 +122,10 @@ function PANEL:Think()
 				local sw = ( entry.data / self.numsum ) * self.proc -- degrees of segment
 				if self.drawback then
 					self.gdata[k].cir1, self.gdata[k].cir2 = draw.CalcVertsPartCir( w, h, self.radius1 + self.backthick, self.radius2 - self.backthick, pos, pos + sw )
-					self.gdata[k].ang = pos
 				else
 					self.gdata[k].cir1, self.gdata[k].cir2 = draw.CalcVertsPartCir( w, h, self.radius1, self.radius2, pos, pos + sw )
-					self.gdata[k].ang = pos
 				end
+				self.gdata[k].ang = -pos + 90 
 				pos = pos + sw
 			end
 			if self.drawback then
