@@ -8,6 +8,9 @@ function PANEL:Init()
 	self.proc = 361
 	self.radius1 = 100
 	self.radius2 = 200
+	self.speed = 15
+	
+	self.thinktick = CurTime()
 	
 end
 
@@ -39,9 +42,27 @@ function PANEL:AddData( data, name, colour )
 	
 end
 
-function PANEL:RunCalc()
+function PANEL:ClearData()
+	
+	self.gdata = {}
+	self.numsum = 0
+	self.proc = 361
+	
+end
+
+function PANEL:StartAnim()
 	
 	self.proc = 0
+	
+end
+
+function PANEL:SetSpeed( num )
+	
+	if type(num) != "number" then 
+		print( "error: unexpected radius entry in pie graph element" )
+	else
+		self.speed = num
+	end
 	
 end
 
@@ -69,16 +90,19 @@ end
 
 function PANEL:Think()
 	
-	local w, h = self:GetWide()/2, self:GetTall()/2
-	
-	if self.proc <= 360 then
-		local pos = 0
-		for k, entry in ipairs( self.gdata ) do
-			local sw = ( entry.data / self.numsum ) * self.proc
-			self.gdata[k].cir1, self.gdata[k].cir2 = draw.CalcVertsPartCir( w, h, self.radius1, self.radius2, pos, pos + sw )
-			pos = pos + sw
+	if self.thinktick < CurTime() then
+		self.thinktick = CurTime() + 0.0333 -- 30 fps
+		local w, h = self:GetWide()/2, self:GetTall()/2
+		
+		if self.proc <= 360 then
+			local pos = 0
+			for k, entry in ipairs( self.gdata ) do
+				local sw = ( entry.data / self.numsum ) * self.proc
+				self.gdata[k].cir1, self.gdata[k].cir2 = draw.CalcVertsPartCir( w, h, self.radius1, self.radius2, pos, pos + sw )
+				pos = pos + sw
+			end
+			self.proc = self.proc + self.speed
 		end
-		self.proc = self.proc + 2
 	end
 	
 end
