@@ -37,10 +37,13 @@ function PANEL:Paint( w, h )
 					surface.DrawLine( seg.cir1[1].x, seg.cir1[1].y, seg.cir2[1].x, seg.cir2[1].y )
 					surface.DrawLine( seg.cir1[#seg.cir1].x, seg.cir1[#seg.cir1].y, seg.cir2[#seg.cir2].x, seg.cir2[#seg.cir2].y )
 					if self.backthick > 1 then
-						surface.DrawTexturedRectRotated( (seg.cir1[1].x + seg.cir2[1].x) / 2, (seg.cir1[1].y + seg.cir2[1].y) / 2, self.backthick, self.radius2-self.radius1, seg.ang )
+						surface.DrawTexturedRectRotated( (seg.cir1[1].x + seg.cir2[1].x) / 2, (seg.cir1[1].y + seg.cir2[1].y) / 2, self.backthick, self.radius2-self.radius1-1, seg.ang )
 					end
 				end
 			end
+		end
+		if self.drawback == true and self.backthick > 1 then
+			surface.DrawRect( w/2 + self.radius1, h / 2, self.radius2-self.radius1-1, self.backthick )
 		end
 	end
 	
@@ -110,6 +113,25 @@ function PANEL:SetBackThick( num )
 	
 end
 
+function PANEL:ThinkEvaPos( proc, w, h )
+	
+	local pos = 0
+	for k, entry in ipairs( self.gdata ) do
+		local sw = ( entry.data / self.numsum ) * proc -- degrees of segment
+		if self.drawback then
+			self.gdata[k].cir1, self.gdata[k].cir2 = draw.CalcVertsPartCir( w, h, self.radius1 + self.backthick, self.radius2 - self.backthick, pos, pos + sw )
+		else
+			self.gdata[k].cir1, self.gdata[k].cir2 = draw.CalcVertsPartCir( w, h, self.radius1, self.radius2, pos, pos + sw )
+		end
+		self.gdata[k].ang = -pos + 90 
+		pos = pos + sw
+	end
+	if self.drawback then
+		self.backg.cir1, self.backg.cir2 = draw.CalcVertsPartCir( w, h, self.radius1, self.radius2, 0, pos )
+	end
+	
+end
+
 function PANEL:Think()
 	
 	if self.thinktick < CurTime() then
@@ -117,21 +139,11 @@ function PANEL:Think()
 		local w, h = self:GetWide()/2, self:GetTall()/2 -- center
 		
 		if self.proc <= 360 then
-			local pos = 0
-			for k, entry in ipairs( self.gdata ) do
-				local sw = ( entry.data / self.numsum ) * self.proc -- degrees of segment
-				if self.drawback then
-					self.gdata[k].cir1, self.gdata[k].cir2 = draw.CalcVertsPartCir( w, h, self.radius1 + self.backthick, self.radius2 - self.backthick, pos, pos + sw )
-				else
-					self.gdata[k].cir1, self.gdata[k].cir2 = draw.CalcVertsPartCir( w, h, self.radius1, self.radius2, pos, pos + sw )
-				end
-				self.gdata[k].ang = -pos + 90 
-				pos = pos + sw
-			end
-			if self.drawback then
-				self.backg.cir1, self.backg.cir2 = draw.CalcVertsPartCir( w, h, self.radius1, self.radius2, 0, pos )
-			end
+			self:ThinkEvaPos( self.proc, w, h )
 			self.proc = self.proc + self.speed
+		elseif self.proc > 360 then
+			self:ThinkEvaPos( 360, w, h )
+			self.proc = 360
 		end
 	end
 	
