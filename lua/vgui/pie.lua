@@ -50,8 +50,8 @@ function PANEL:Paint( w, h )
 end
 
 function PANEL:AddData( data, colour )
-	
-	if colour == nil or !IsColor(colour) then colour = HSVToColor( math.Rand( 0, 12 )*30, 1, 1 ) end
+
+	colour = colour or HSVToColor( math.Rand( 0, 12 )*30, 1, 1 )
 	
 	table.insert( self.gdata, {data = tonumber(data), col = colour} )
 	self.numsum = self.numsum + tonumber(data)
