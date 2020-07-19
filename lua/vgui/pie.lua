@@ -49,12 +49,11 @@ function PANEL:Paint( w, h )
 	
 end
 
-function PANEL:AddData( data, name, colour )
+function PANEL:AddData( data, colour )
 	
-	if name == nil or !isstring(name) then name = "unknown" end
 	if colour == nil or !IsColor(colour) then colour = HSVToColor( math.Rand( 0, 12 )*30, 1, 1 ) end
 	
-	table.insert( self.gdata, {data = tonumber(data), name = name, col = colour} )
+	table.insert( self.gdata, {data = tonumber(data), col = colour} )
 	self.numsum = self.numsum + tonumber(data)
 	
 end
