@@ -7,9 +7,10 @@ function PANEL:Init()
 	self.showname = false
 	self.numsum = 0
 	self.proc = 361
+	self.pani = 101
 	self.radius1 = 20
 	self.radius2 = 40
-	self.speed = 15
+	self.speed = 5
 	self.drawback = false
 	self.backcol = Color( 0,0,0,255 )
 	self.backthick = 1
@@ -37,7 +38,7 @@ function PANEL:Paint( w, h )
 					surface.DrawLine( seg.cir1[1].x, seg.cir1[1].y, seg.cir2[1].x, seg.cir2[1].y )
 					surface.DrawLine( seg.cir1[#seg.cir1].x, seg.cir1[#seg.cir1].y, seg.cir2[#seg.cir2].x, seg.cir2[#seg.cir2].y )
 					if self.backthick > 1 then
-						surface.DrawTexturedRectRotated( (seg.cir1[1].x + seg.cir2[1].x) / 2, (seg.cir1[1].y + seg.cir2[1].y) / 2, self.backthick, self.radius2-self.radius1-1, seg.ang )
+						surface.DrawTexturedRectRotated( (seg.cir1[1].x + seg.cir2[1].x) / 2, (seg.cir1[1].y + seg.cir2[1].y) / 2, self.backthick, self.radius2-self.radius1-1, seg.ang1 )
 					end
 				end
 			end
@@ -53,7 +54,7 @@ function PANEL:AddData( data, colour )
 
 	colour = colour or HSVToColor( math.Rand( 0, 12 )*30, 1, 1 )
 	
-	table.insert( self.gdata, {data = tonumber(data), col = colour} )
+	table.insert( self.gdata, {data = tonumber(data), col = colour, ang1 = 0, ang2 = 0} )
 	self.numsum = self.numsum + tonumber(data)
 	
 end
@@ -69,6 +70,20 @@ end
 function PANEL:StartAnim()
 	
 	self.proc = 0
+	
+end
+
+function PANEL:Animate()
+	
+	if self.proc >= 360 then
+		self.pani = 0
+		for k, entry in ipairs( self.gdata ) do
+			local csw = entry.ang1 - entry.ang2				-- current width
+			local tsw = ( entry.data / self.numsum ) * 360	-- target width
+			self.gdata[k].csw = csw
+			self.gdata[k].dsw = ( tsw - csw ) / 100
+		end
+	end
 	
 end
 
@@ -122,8 +137,9 @@ function PANEL:ThinkEvaPos( proc, w, h )
 		else
 			self.gdata[k].cir1, self.gdata[k].cir2 = draw.CalcVertsPartCir( w, h, self.radius1, self.radius2, pos, pos + sw )
 		end
-		self.gdata[k].ang = -pos + 90 
+		self.gdata[k].ang1 = -pos + 90 
 		pos = pos + sw
+		self.gdata[k].ang2 = -pos + 90 
 	end
 	if self.drawback then
 		self.backg.cir1, self.backg.cir2 = draw.CalcVertsPartCir( w, h, self.radius1, self.radius2, 0, pos )
@@ -131,18 +147,45 @@ function PANEL:ThinkEvaPos( proc, w, h )
 	
 end
 
+function PANEL:ThinkAddPos( proc, w, h )
+	
+	local pos = 0
+	for k, entry in ipairs( self.gdata ) do
+		local dsw = entry.csw + proc * entry.dsw -- difference between -> movement
+		
+		if self.drawback then
+			self.gdata[k].cir1, self.gdata[k].cir2 = draw.CalcVertsPartCir( w, h, self.radius1 + self.backthick, self.radius2 - self.backthick, pos, pos + dsw )
+		else
+			self.gdata[k].cir1, self.gdata[k].cir2 = draw.CalcVertsPartCir( w, h, self.radius1, self.radius2, pos, pos + dsw )
+		end
+		
+		self.gdata[k].ang1 = -pos + 90 
+		pos = pos + dsw
+		self.gdata[k].ang2 = -pos + 90 
+	end
+	
+end
+
 function PANEL:Think()
 	
 	if self.thinktick < CurTime() then
-		self.thinktick = CurTime() + 0.0333 -- ~30 fps
+		self.thinktick = CurTime() + 0.0167 -- ~60 fps
 		local w, h = self:GetWide()/2, self:GetTall()/2 -- center
 		
-		if self.proc <= 360 then
+		if self.proc < 360 then
+			self.proc = math.min( self.proc + ( self.speed * 3.6 ), 360 )
 			self:ThinkEvaPos( self.proc, w, h )
-			self.proc = self.proc + self.speed
 		elseif self.proc > 360 then
-			self:ThinkEvaPos( 360, w, h )
 			self.proc = 360
+			self:ThinkEvaPos( 360, w, h )
+		else
+			if self.pani < 100 then
+				self.pani = math.min( self.pani + self.speed, 100 )
+				self:ThinkAddPos( self.pani, w, h )
+			elseif self.pani > 100 then
+				self.pani = 100
+				self:ThinkEvaPos( 360, w, h )
+			end
 		end
 	end
 	
