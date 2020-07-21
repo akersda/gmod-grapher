@@ -57,7 +57,7 @@ function PANEL:AddData( data, colour )
 
 	colour = colour or HSVToColor( math.Rand( 0, 12 )*30, 1, 1 )
 	
-	table.insert( self.gdata, {data = tonumber(data), col = colour, ang1 = 0, ang2 = 0} )
+	table.insert( self.gdata, {data = tonumber(data), col = colour, ang1 = 0, ang2 = 0, csw = 0, dsw = 0} )
 	self.numsum = self.numsum + tonumber(data)
 	
 end
