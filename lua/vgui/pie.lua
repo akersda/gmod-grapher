@@ -115,7 +115,7 @@ end
 
 function PANEL:SetBackground( col )
 	
-	if col == nil then
+	if col == nil or col == false then
 		self.drawback = false
 	elseif IsColor(col) then
 		self.drawback = true
