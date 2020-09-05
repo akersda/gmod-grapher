@@ -12,7 +12,8 @@ function PANEL:Init()
 	self.backthick = 1					-- background thickness (def)
 	self.showname = false				-- should show name (def)
 	self.textd = { 						-- text data
-		pshow = 10 
+		yalign=TEXT_ALIGN_CENTER,
+		xalign=TEXT_ALIGN_CENTER
 	}
 	
 	self.thinktick = CurTime()
@@ -37,9 +38,10 @@ function PANEL:Paint( w, h )
 	if !table.IsEmpty(self.gdata) then
 		for k, sec in ipairs( self.gdata ) do
 			local swidth = math.Round(sec.cw)
+			if k == #self.gdata and self.cwsum == w then swidth = w - posx - offset end
 			surface.SetDrawColor(sec.col)
 			surface.DrawRect(posx,offset,swidth,h-2*offset)
-			if sec.utext == true then draw.TextShadow( table.Merge(self.textd,{text=sec.name,pos={posx,h/2}}), 1, 200 ) end
+			if sec.utext == true then draw.TextShadow( table.Merge(self.textd,{text=sec.name,pos={posx+swidth/2,h/2}}), 1, 200 ) end
 			posx = posx + swidth
 		end
 	end
@@ -135,8 +137,12 @@ function PANEL:Think()
 				for k, dat in ipairs(self.gdata) do
 					local new_w = ( dat.data / self.numsum ) * width
 					self.gdata[k].cw = new_w
-					if new_w > (width/self.textd.pshow) and self.showname == true then
-						self.gdata[k].utext = true
+					if self.showname == true then
+						surface.SetFont(self.textd.font or "Default")
+						local twid, thei = surface.GetTextSize(dat.name)
+						if new_w > (twid + 2) then
+							self.gdata[k].utext = true
+						end
 					elseif dat.utext == true then
 						self.gdata[k].utext = false
 					end
@@ -152,8 +158,12 @@ function PANEL:Think()
 				for k, dat in ipairs(self.gdata) do
 					local new_w = dat.cw + dat.dw * width
 					self.gdata[k].cw = new_w
-					if new_w > (width/self.textd.pshow) and self.showname == true then
-						self.gdata[k].utext = true
+					if self.showname == true then
+						surface.SetFont(self.textd.font or "Default")
+						local twid, thei = surface.GetTextSize(dat.name)
+						if new_w > (twid + 2) then
+							self.gdata[k].utext = true
+						end
 					elseif dat.utext == true then
 						self.gdata[k].utext = false
 					end
