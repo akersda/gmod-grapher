@@ -10,6 +10,10 @@ function PANEL:Init()
 	self.drawback = false				-- should draw background (def)
 	self.backcol = Color( 0,0,0,255 )	-- background colour (def)
 	self.backthick = 1					-- background thickness (def)
+	self.showname = false				-- should show name (def)
+	self.textd = { 						-- text data
+		pshow = 10 
+	}
 	
 	self.thinktick = CurTime()
 	
@@ -35,6 +39,7 @@ function PANEL:Paint( w, h )
 			local swidth = math.Round(sec.cw)
 			surface.SetDrawColor(sec.col)
 			surface.DrawRect(posx,offset,swidth,h-2*offset)
+			if sec.utext == true then draw.TextShadow( table.Merge(self.textd,{text=sec.name,pos={posx,h/2}}), 1, 200 ) end
 			posx = posx + swidth
 		end
 	end
@@ -46,9 +51,22 @@ function PANEL:AddData( data, name, colour )
 	name = tostring(name) or "unknown"
 	colour = colour or HSVToColor( math.Rand( 0, 12 )*30, 1, 1 )
 	
-	table.insert( self.gdata, {data = tonumber(data), name = name, col = colour, cw = 0, dw = 0} )
+	table.insert( self.gdata, {data = tonumber(data), name = name, col = colour, cw = 0, dw = 0, utext = false} )
 	self.numsum = self.numsum + tonumber(data)
 	
+end
+
+function PANEL:TextData( tab )
+	
+	if not istable( tab ) then return end
+	table.Merge( self.textd, tab )
+	
+end
+
+function PANEL:ShowText( bool )
+
+	self.showname = bool or false
+
 end
 
 function PANEL:ClearData()
@@ -115,8 +133,15 @@ function PANEL:Think()
 				self.cwsum = width
 				if self.drawback == true then width = width - 2*self.backthick end
 				for k, dat in ipairs(self.gdata) do
-					self.gdata[k].cw = ( dat.data / self.numsum ) * width
+					local new_w = ( dat.data / self.numsum ) * width
+					self.gdata[k].cw = new_w
+					if new_w > (width/self.textd.pshow) and self.showname == true then
+						self.gdata[k].utext = true
+					elseif dat.utext == true then
+						self.gdata[k].utext = false
+					end
 				end
+				PrintTable( self.gdata )
 			else
 				local width = self:GetWide()
 				local cdw = 0
@@ -127,6 +152,11 @@ function PANEL:Think()
 				for k, dat in ipairs(self.gdata) do
 					local new_w = dat.cw + dat.dw * width
 					self.gdata[k].cw = new_w
+					if new_w > (width/self.textd.pshow) and self.showname == true then
+						self.gdata[k].utext = true
+					elseif dat.utext == true then
+						self.gdata[k].utext = false
+					end
 					cdw = cdw + new_w
 				end
 				self.cwsum = cdw
